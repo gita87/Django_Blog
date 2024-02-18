@@ -1,0 +1,20 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="content-section">
+
+    <h1>Blog Home</h1>
+    <hr>
+    {% for post in posts %}
+        <h3>{{post.title}}</h3>
+        <p>By: {{post.author}} on {{post.date_posted}}</p>
+        <p>{{ post.content|truncatechars:300 }}</p>
+        {% if post.content|length > 300 %}
+            <a href="{% url 'blog-detail' post.id %}">Read more</a>
+        {% endif %}
+        <br>
+        <hr>
+    {% endfor %}
+</div>
+
+{% endblock content %}

@@ -92,3 +92,6 @@ local_settings.py
 db.sqlite3
 
 venv/
+.vercel
+node_modules/
+dist/

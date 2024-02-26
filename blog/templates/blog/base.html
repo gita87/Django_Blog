@@ -1,4 +1,6 @@
 {% load static %}
+{% load safe_filters %}
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -21,6 +23,11 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap"
       rel="stylesheet"
     />
+    {% comment %} JQuery {% endcomment %}
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+   {{ form.media.css }} 
+   {{form.media.js }}
+
   </head>
   <body>
     <header class="site-header">
@@ -185,45 +192,46 @@
         </div>
         <div class="col-md-8">{% block content %}{% endblock %}</div>
         <!-- Add this section in the <div class="col-md-4"> -->
-          <div class="col-md-4">
-            <div class="content-sectionw">
-              <div
-                class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white"
-                style="width: 380px"
+        <div class="col-md-4">
+          <div class="content-sectionw">
+            <div
+              class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white"
+              style="width: 380px"
+            >
+              <a
+                id="list-group"
+                style="text-decoration: none"
+                href=""
+                class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom"
               >
+                <span class="fs-5 fw-semibold" id="gist-btn">Latest Gist</span>
+              </a>
+              {% if latest_gists %}
+              <div class="list-group list-group-flush border-bottom scrollarea">
+                {% for gist in latest_gists %}
                 <a
-                  id="list-group"
-                  style="text-decoration: none"
-                  href=""
-                  class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom"
+                  href="{% url 'blog-detail' gist.id %}"
+                  class="list-group-item list-group-item-action lh-tight"
                 >
-                  <span class="fs-5 fw-semibold" id="gist-btn">Latest Gist</span>
-                </a>
-                {% if latest_gists %}
-                <div class="list-group list-group-flush border-bottom scrollarea">
-                  {% for gist in latest_gists %}
-                  <a
-                    href="{% url 'blog-detail' gist.id %}"
-                    class="list-group-item list-group-item-action lh-tight"
+                  <div
+                    class="d-flex w-100 align-items-center justify-content-between"
                   >
-                    <div
-                      class="d-flex w-100 align-items-center justify-content-between"
-                    >
-                      <strong class="mb-1">{{ gist.title }}</strong>
-                      <small>{{ gist.date }}</small>
-                    </div>
-                    <div class="col-10 mb-1 small">{{ gist.content|truncatechars:100 }}</div>
-                    {% if gist.content|length > 100 %}
-                    {% endif %}
-                  </a>
-                  {% endfor %}
-                </div>
-                {% else %}
-                <p>No gists available at the moment.</p>
-                {% endif %}
+                    <strong class="mb-1">{{ gist.title }}</strong>
+                    <small>{{ gist.date }}</small>
+                  </div>
+                  <div class="col-10 mb-1 small">
+                    {{ gist.content|truncatechars:100|sanitize_html}}
+                  </div>  
+                  {% if gist.content|length > 100 %} {% endif %}
+                </a>
+                {% endfor %}
               </div>
+              {% else %}
+              <p>No gists available at the moment.</p>
+              {% endif %}
             </div>
           </div>
+        </div>
       </div>
 
       <footer class="">
@@ -247,7 +255,7 @@
             <a href="#" class="nav-link px-2 text-muted">About</a>
           </li>
         </ul>
-        <p class="text-center text-muted">&copy; Desphixs 2021</p>
+        <p class="text-center text-muted">&copy; Gita 2024</p>
       </footer>
     </main>
 

@@ -1,21 +1,232 @@
-{% extends 'blog/base.html' %}
-{% load crispy_forms_tags %}
+{% extends 'blog/base.html' %} {% load crispy_forms_tags %} {% block content %}
+<!-- Add the following jQuery script in your template -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Check if there are errors on page load
+    checkAndDisplayErrors();
 
+    // Add a click event to close the error message
+    $(".close-error").click(function () {
+      $(".form-error").hide();
+    });
+  });
 
-{% block content %}
-    <div class="content-section">
-        <form action="" method="post">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">New Post</legend>
-                {{ form|crispy }}
-            </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Post</button>
-            </div>
-        </form>
-        <div class="border-top pt-3">
-            <small class="text-muted">Already have an account? <a href="{% url 'blog-home' %}">Go Back</a></small>
+  // Function to check and display errors
+  function checkAndDisplayErrors() {
+    if ($(".form-error").length) {
+      $(".form-error").show();
+    }
+  }
+</script>
+
+<div class="content-section">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <fieldset class="form-group">
+      <legend class="border-bottom mb-4">New Post</legend>
+      {% if form.errors %}
+      <div class="form-error alert alert-warning alert-dismissible fade show text-left" role="alert">
+        <div class="d-flex align-items-center">
+          <ul class="errors-list mb-0 pl-3">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li>This field is required : {{ field|title }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+          <button
+            type="button"
+            class="close ml-auto"
+            data-dismiss="alert"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
+      </div>
+    {% endif %}
+      {{ form|crispy }}
+      <input type="hidden" name="content" id="id_content">
+
+    </fieldset>
+    <div class="form-group">
+      <button type="submit">Post</button>
     </div>
+  </form>
+  <div class="border-top pt-3">
+    <small class="text-muted"
+      >Already have an account?
+      <a href="{% url 'blog-home' %}">Go Back</a></small
+    >
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var trixEditor = document.getElementById('myTrixEditor');
+        var contentInput = document.getElementById('id_content');
+
+        // Pastikan elemen-elemen ditemukan sebelum melanjutkan
+        if (trixEditor && contentInput) {
+            trixEditor.addEventListener('trix-change', function () {
+                // Set value dari input menggunakan nilai HTML dari Trix Editor
+                contentInput.value = trixEditor.innerHTML;
+            });
+        }
+    });
+</script>
+  
+<style>
+  .content-section {
+    padding-top: 100px;
+  }
+</style>
+
+<style type="text/css" data-tag-name="trix-editor">
+  trix-editor {
+    display: block;
+  }
+
+  trix-editor:empty:not(:focus)::before {
+    content: attr(placeholder);
+    color: graytext;
+    cursor: text;
+    pointer-events: none;
+    white-space: pre-line;
+  }
+
+  trix-editor a[contenteditable="false"] {
+    cursor: text;
+  }
+
+  trix-editor img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  trix-editor [data-trix-attachment] figcaption textarea {
+    resize: none;
+  }
+
+  trix-editor [data-trix-attachment] figcaption textarea.trix-autoresize-clone {
+    position: absolute;
+    left: -9999px;
+    max-height: 0px;
+  }
+
+  trix-editor
+    [data-trix-attachment]
+    figcaption[data-trix-placeholder]:empty::before {
+    content: attr(data-trix-placeholder);
+    color: graytext;
+  }
+
+  trix-editor [data-trix-cursor-target] {
+    display: inline-block !important;
+    width: 1px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  trix-editor [data-trix-cursor-target="left"] {
+    vertical-align: top !important;
+    margin-left: -1px !important;
+  }
+
+  trix-editor [data-trix-cursor-target="right"] {
+    vertical-align: bottom !important;
+    margin-right: -1px !important;
+  }
+</style>
+<style type="text/css" data-tag-name="trix-toolbar">
+  trix-toolbar {
+    display: block;
+  }
+
+  trix-toolbar {
+    white-space: nowrap;
+  }
+
+  trix-toolbar [data-trix-dialog] {
+    display: none;
+  }
+
+  trix-toolbar [data-trix-dialog][data-trix-active] {
+    display: block;
+  }
+
+  trix-toolbar [data-trix-dialog] [data-trix-validate]:invalid {
+    background-color: #ffdddd;
+  }
+</style>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta
+  name="viewport"
+  content="width=device-width, user-scalable=no, initial-scale=1.0"
+/>
+<meta
+  name="description"
+  content="Compose beautifully formatted text in your web application. Trix is an editor for writing messages, comments, articles, and lists—the simple documents most web apps are made of. It features a sophisticated document model, support for embedded attachments, and outputs terse and consistent HTML."
+/>
+
+<title>Add a New Post</title>
+
+<link rel="mask-icon" href='/images/pinned-tab-icon.svg"' color="#4fbde1" />
+<link rel="shortcut icon" href="/images/favicon.ico" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/trix/0.9.7/trix.css"
+/>
+<link rel="stylesheet" href="/css/main.css?1708543800090120026" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm//trix/dist/trix.min.css"
+  crossorigin="anonymous"
+/>
+<link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  integrity="sha384-GLhlTQ8iN17ZL5ZZKgAIfXKD2GRHJ567f9emw+jIbYUqD6S5C1PTZUn4bWm1N2t"
+  crossorigin="anonymous"
+/>
+
+<script
+  src="https://cdn.jsdelivr.net/npm//trix/dist/trix.umd.min.js"
+  crossorigin="anonymous"
+></script>
+<script>
+  document.addEventListener("trix-initialize", function () {
+    Trix.config.textAttributes.underline = {
+      style: { textDecoration: "underline" },
+      inheritable: true,
+      parser: function (element) {
+        var style = window.getComputedStyle(element);
+        return style.textDecoration === "underline";
+      },
+    };
+
+    var buttonHTML =
+      '<button type="button" class="trix-button trix-button--icon trix-button--icon-underline" data-trix-attribute="underline" title="underline">U</button>';
+    var groupElement = Trix.config.toolbarElement.querySelector(
+      ".trix-button-group--text-tools"
+    );
+    groupElement.insertAdjacentHTML("beforeend", buttonHTML);
+  });
+</script>
+<style>
+  .trix-button--icon-underline {
+    font-size: 18px;
+    vertical-align: bottom;
+    text-decoration: underline;
+  }
+</style>
+
 {% endblock content %}

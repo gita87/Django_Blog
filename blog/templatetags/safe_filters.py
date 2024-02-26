@@ -1,42 +1,31 @@
 # safe_filters.py
-from html_sanitizer import Sanitizer
+from copy import deepcopy
+import nh3
 from django import template
-import bleach
 
 register = template.Library()
 
-ALLOWED_TAGS = [
-    'a', 'img', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'strong', 'ul', 'pre',
-    'h1', 'h2', 'h3', 'p',  'span', 'figure', 'figcaption', 'div', 'br', 'span', 'hr', 'trix-editor'
-    # Tambahkan tag lain yang ingin Anda pertahankan di sini
-]
+# Create a deep copy of ALLOWED_ATTRIBUTES
+attributes = deepcopy(nh3.ALLOWED_ATTRIBUTES)
 
-ALLOWED_ATTRIBUTES = {
+# Define additional attributes for each tag
+allowed_attributes = {
     'a': ['href', 'title'],
     'img': ['src', 'alt', 'style', 'data-trix-mutable', 'data-trix-serialized-attributes', 'data-trix-store-key'],
-    'figure': ['contenteditable', 'data-trix-attachment', 'data-trix-content-type', 'data-trix-id', 'data-trix-attributes', 'data-trix-serialize', 'class'],
-    'figcaption': ['class'],
+    # 'figure': ['contenteditable', 'data-trix-attachment', 'data-trix-content-type', 'data-trix-id', 'data-trix-attributes', 'data-trix-serialize', 'class'],
+    # 'figcaption': ['class'],
     'span': ['data-trix-cursor-target', 'data-trix-serialize'],
-    'progress': ['class', 'value', 'max', 'data-trix-mutable', 'data-trix-store-key'],
+    # 'progress': ['class', 'value', 'max', 'data-trix-mutable', 'data-trix-store-key'],
     'trix-editor': ['input', 'class', 'role', 'trix-id', 'contenteditable', 'toolbar']
-    # ...
+    # Add more allowed attributes as needed
 }
 
-ALLOWED_STYLES = ['max-width', 'height']  # Tambahkan properti CSS lain yang diizinkan
-
-# Buat objek sanitizer
-sanitizer = Sanitizer()
+# Update ALLOWED_ATTRIBUTES with additional attributes
+for tag, attrs in allowed_attributes.items():
+    attributes[tag] = attributes.get(tag, set()).union(attrs)
 
 @register.filter(name='sanitize_html')
 def sanitize_html(value):
-    # Bersihkan HTML menggunakan bleach terlebih dahulu
-    linked_value = bleach.linkify(value)
-    cleaned_value = bleach.clean(linked_value,
-                                 tags=ALLOWED_TAGS,
-                                 attributes=ALLOWED_ATTRIBUTES,
-                                 strip=True)
-
-    # Hapus atribut gaya menggunakan html_sanitizer
-    cleaned_value = sanitizer.sanitize(cleaned_value)
-
+    # Clean HTML using nh3
+    cleaned_value = nh3.clean(value, attributes=attributes)
     return cleaned_value

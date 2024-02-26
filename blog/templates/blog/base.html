@@ -220,7 +220,7 @@
                     <small>{{ gist.date }}</small>
                   </div>
                   <div class="col-10 mb-1 small">
-                    {{ gist.content|truncatechars:100|sanitize_html}}
+                    {{ gist.content|truncatechars:100|safe}}
                   </div>  
                   {% if gist.content|length > 100 %} {% endif %}
                 </a>

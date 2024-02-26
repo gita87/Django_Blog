@@ -8,7 +8,6 @@ from django.views.generic import (
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import PostForm
 from .templatetags.safe_filters import sanitize_html
-from .mixins import HtmlSanitizedCharField
 
 
 def about(request):
@@ -38,36 +37,27 @@ class PostDetailView(LoginRequiredMixin,
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_gists'] = Post.objects.order_by('-date_posted')[:3]
-        # Sanitize HTML content
-        context['object'].content = sanitize_html(context['object'].content)
 
         return context
 
 
-class PostCreateView(LoginRequiredMixin,
-                     HtmlSanitizedCharField,
-                     CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = 'blog/post_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['latest_gists'] = Post.objects.order_by('-date_posted')[:3]
+        context['latest_gists'] = Post.objects.order_by('-date_posted')[:3]
         return context
+    
+    def form_valid(self, form):
+        form.instance.author = self.request.user  # Set the author before saving
 
+        # Sanitize HTML content using the sanitize_html function
+        form.instance.content = sanitize_html(form.cleaned_data['content'])
 
-# class PostUpdateView(LoginRequiredMixin,
-#                      UserPassesTestMixin,
-#                      HtmlSanitizedCharField,
-#                      UpdateView):
-#     model = Post
-#     form_class = PostForm
-#     template_name = 'blog/post_form.html'
-
-#     def test_func(self):
-#         post = self.get_object()
-#         return self.request.user == post.author
+        return super().form_valid(form)
 
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -83,16 +73,10 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         # Get the Post object for the update view
         return get_object_or_404(Post, pk=self.kwargs['pk'])
 
-    def get_initial(self):
-        initial = super().get_initial()
-        return initial.copy() if initial else {}  # Ensure initial is not None
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['initial'] = self.get_initial()
-        return kwargs
-
     def form_valid(self, form):
+        # Sanitize HTML content using the sanitize_html function
+        form.instance.content = sanitize_html(form.cleaned_data['content'])
+
         # Handle form validation and saving
         return super().form_valid(form)
 

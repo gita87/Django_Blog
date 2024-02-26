@@ -22,8 +22,8 @@ def register(request):
 
     context = {'form': form}
     # Retrieve the latest gists and add them to the context
-    latest_gists = Post.objects.order_by('-date_posted')[:3]  # Adjust this based on your model
-    context["latest_gists"] = latest_gists
+    # latest_gists = Post.objects.order_by('-date_posted')[:3]  # Adjust this based on your model
+    # context["latest_gists"] = latest_gists
     return render(request, 'users/register.html', context)
 
 

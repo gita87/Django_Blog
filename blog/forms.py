@@ -21,7 +21,7 @@ class PostForm(forms.ModelForm):
 
         # Ensure the style attribute is preserved
         if content and '<img' in content:
-            content = content.replace('<img', '<img style="max-width:100%; height:auto;"')
+            content = content.replace('<img', "<img style='max-width:100%; height:auto;'")
             cleaned_data['content'] = content
 
         return cleaned_data

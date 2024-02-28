@@ -1,82 +1,86 @@
-{% extends 'blog/base.html' %} {% load crispy_forms_tags %} {% block content %}
-<!-- Add the following jQuery script in your template -->
+{% extends 'blog/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
   $(document).ready(function () {
-    // Check if there are errors on page load
     checkAndDisplayErrors();
 
-    // Add a click event to close the error message
     $(".close-error").click(function () {
       $(".form-error").hide();
     });
   });
 
-  // Function to check and display errors
   function checkAndDisplayErrors() {
     if ($(".form-error").length) {
       $(".form-error").show();
     }
   }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var trixEditor = document.getElementById('myTrixEditor');
+    var contentInput = document.getElementById('id_content');
+
+    if (trixEditor && contentInput) {
+      trixEditor.addEventListener('trix-change', function () {
+        contentInput.value = trixEditor.innerHTML;
+      });
+
+      // Initialize Trix editor with post content if available
+      var initialContent = document.getElementById('initialContent');
+      if (initialContent) {
+        trixEditor.editor.loadHTML(initialContent.value);
+      }
+    }
+  });
 </script>
 
 <div class="content-section">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-
     <fieldset class="form-group">
       <legend class="border-bottom mb-4">New Post</legend>
       {% if form.errors %}
-      <div class="form-error alert alert-warning alert-dismissible fade show text-left" role="alert">
-        <div class="d-flex align-items-center">
-          <ul class="errors-list mb-0 pl-3">
-            {% for field, errors in form.errors.items %}
-              {% for error in errors %}
-                <li>This field is required : {{ field|title }}</li>
+        <div class="form-error alert alert-warning alert-dismissible fade show text-left" role="alert">
+          <div class="d-flex align-items-center">
+            <ul class="errors-list mb-0 pl-3">
+              {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                  <li>This field is required: {{ field|title }}</li>
+                {% endfor %}
               {% endfor %}
-            {% endfor %}
-          </ul>
-          <button
-            type="button"
-            class="close ml-auto"
-            data-dismiss="alert"
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+            </ul>
+            <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
         </div>
-      </div>
-    {% endif %}
+      {% endif %}
       {{ form|crispy }}
       <input type="hidden" name="content" id="id_content">
-
+      {% if post %}
+        <input type="hidden" id="initialContent" value="{{ post.content }}">
+      {% endif %}
     </fieldset>
     <div class="form-group">
       <button type="submit">Post</button>
     </div>
   </form>
   <div class="border-top pt-3">
-    <small class="text-muted"
-      >Already have an account?
-      <a href="{% url 'blog-home' %}">Go Back</a></small
-    >
+    <small class="text-muted">Already have an account? <a href="{% url 'blog-home' %}">Go Back</a></small>
   </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var trixEditor = document.getElementById('myTrixEditor');
-        var contentInput = document.getElementById('id_content');
+<style>
+  .content-section {
+    padding-top: 100px;
+  }
+</style>
 
-        // Pastikan elemen-elemen ditemukan sebelum melanjutkan
-        if (trixEditor && contentInput) {
-            trixEditor.addEventListener('trix-change', function () {
-                // Set value dari input menggunakan nilai HTML dari Trix Editor
-                contentInput.value = trixEditor.innerHTML;
-            });
-        }
-    });
-</script>
+<!-- Your existing styles -->
+
+
   
 <style>
   .content-section {

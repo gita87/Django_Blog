@@ -12,6 +12,6 @@ class TrixEditorWidget(forms.Widget):
         if value is None:
             value = ''
 
-        trix_editor = f'<trix-editor input="{final_attrs["id"]}" class="trix-content" role="textbox" trix-id="1" id="myTrixEditor"></trix-editor>'
+        trix_editor = f'<trix-editor input="{final_attrs["id"]}" class="trix-content" role="textbox" trix-id="1" id="myTrixEditor">{value}</trix-editor>'
 
         return mark_safe(trix_editor)

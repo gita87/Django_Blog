@@ -28,22 +28,25 @@ class Post(models.Model):
 
         super().save(*args, **kwargs)
 
-    def sanitize_html(self, value):
-        return nh3.clean(
-            value,
-            tags={
-                'a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'strong', 'ul', 'pre',
-                'h1', 'h2', 'h3', 'p', 'img', 'span', 'figure', 'figcaption', 'div', 'br', 'span', 'hr', 'trix-editor'
-                # Add more allowed tags as needed
-            },
-            attributes={
-                'a': {'href', 'title'},
-                'img': {'src', 'alt', 'style', 'data-trix-mutable', 'data-trix-serialized-attributes', 'data-trix-store-key'},
-                'figure': {'contenteditable', 'data-trix-attachment', 'data-trix-content-type', 'data-trix-id', 'data-trix-attributes', 'data-trix-serialize', 'class'},
-                'figcaption': {'class'},
-                'span': {'data-trix-cursor-target', 'data-trix-serialize'},
-                'progress': {'class', 'value', 'max', 'data-trix-mutable', 'data-trix-store-key'},
-                'trix-editor': {'input', 'class', 'role', 'trix-id', 'contenteditable', 'toolbar'}
-                # Add more allowed attributes as needed
-            },
-        )
+    def sanitize_html(value):
+        # Create a deep copy of ALLOWED_ATTRIBUTES
+        attributes = nh3.ALLOWED_ATTRIBUTES.copy()
+
+        # Define additional attributes for each tag
+        additional_attributes = {
+            'a': ['href', 'title'],
+            'img': ['src', 'alt', 'style', 'data-trix-mutable', 'data-trix-serialized-attributes', 'data-trix-store-key', 'data-invert'],
+            'span': ['data-trix-cursor-target', 'data-trix-serialize'],
+            'progress': ['class', 'value', 'max', 'data-trix-mutable', 'data-trix-store-key'],
+            'trix-editor': ['input', 'class', 'role', 'trix-id', 'contenteditable', 'toolbar']
+            # Add more allowed attributes as needed
+        }
+
+        # Update ALLOWED_ATTRIBUTES with additional attributes
+        for tag, attrs in additional_attributes.items():
+            attributes[tag] = attributes.get(tag, set()).union(attrs)
+
+        # Clean HTML using nh3
+        cleaned_value = nh3.clean(value, attributes=attributes)
+
+        return cleaned_value

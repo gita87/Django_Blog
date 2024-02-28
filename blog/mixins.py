@@ -2,7 +2,6 @@ import nh3
 from django import forms
 from django.db import models
 
-
 class HtmlSanitizedCharField(forms.CharField):
     def to_python(self, value):
         value = super().to_python(value)
@@ -21,12 +20,12 @@ class HtmlSanitizedCharField(forms.CharField):
                     'a': {'href', 'title'},
                     'img': {'src', 'alt', 'style', 'data-trix-mutable',
                             'data-trix-serialized-attributes',
-                            'data-trix-store-key'},
+                            'data-trix-store-key', 'data-invert'},
                     'figure': {'contenteditable', 'data-trix-attachment',
                                'data-trix-content-type', 'data-trix-id',
                                'data-trix-attributes', 'data-trix-serialize',
                                'class'},
-                    'figcaption': ['class'],
+                    'figcaption': {'class'},
                     'span': {'data-trix-cursor-target', 'data-trix-serialize'},
                     'progress': {'class', 'value', 'max', 'data-trix-mutable',
                                  'data-trix-store-key'},
@@ -36,7 +35,6 @@ class HtmlSanitizedCharField(forms.CharField):
                 },
             )
         return value
-
 
 class HtmlSanitizedTextField(models.TextField):
     def formfield(self, form_class=HtmlSanitizedCharField, **kwargs):

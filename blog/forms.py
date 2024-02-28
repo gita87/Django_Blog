@@ -1,19 +1,29 @@
 from django import forms
 from .models import Post
 from .widgets import TrixEditorWidget
+import sys
 
 
 class PostForm(forms.ModelForm):
     class Meta:
-        model = Post  # Make sure to specify the model class
+        model = Post
         fields = ['title', 'content']
         labels = {
             'title': 'Title',
             'content': 'Content',
-            # Add other field labels as needed
         }
+        widgets = {'content': TrixEditorWidget}
 
-    content = forms.CharField(widget=TrixEditorWidget)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Set initial content from instance if available
+        if self.instance and 'content' not in self.initial:
+            print("Setting initial content:", self.instance.content, file=sys.stdout)
+            self.initial['content'] = self.instance.content
+            print("Updated initial content:", self.initial['content'], file=sys.stdout)
+
 
     def clean(self):
         cleaned_data = super().clean()

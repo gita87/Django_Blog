@@ -72,6 +72,12 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_object(self, queryset=None):
         # Get the Post object for the update view
         return get_object_or_404(Post, pk=self.kwargs['pk'])
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        post = self.get_object()
+        kwargs['instance'] = post
+        return kwargs
 
     def form_valid(self, form):
         # Sanitize HTML content using the sanitize_html function

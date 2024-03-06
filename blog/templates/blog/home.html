@@ -7,7 +7,7 @@
     <h1>Blog Home</h1>
     <hr>
     {% for post in posts %}
-        <h3>{{post.title}}</h3>
+        <h3><a href="{% url 'blog-detail' post.id %}">{{post.title}}</a></h3>
         <p>By: {{post.author}} on {{post.date_posted}}</p>
         <p>{{ post.content|truncatechars:300|safe }}</p>
         {% if post.content|length > 300 %}

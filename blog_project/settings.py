@@ -55,6 +55,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+ASGI_APPLICATION = "blog_project.asgi.application"
+
 ROOT_URLCONF = "blog_project.urls"
 
 # Default settings

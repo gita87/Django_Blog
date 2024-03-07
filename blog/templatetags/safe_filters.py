@@ -28,4 +28,5 @@ for tag, attrs in allowed_attributes.items():
 def sanitize_html(value):
     # Clean HTML using nh3
     cleaned_value = nh3.clean(value, attributes=attributes)
+    print("cleaned_value : ",cleaned_value)
     return cleaned_value

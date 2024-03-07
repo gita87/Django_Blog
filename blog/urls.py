@@ -8,6 +8,7 @@ from .views import (
     about
 )
 
+
 urlpatterns = [
     path('about/',
          about, name="blog-about"),

@@ -5,6 +5,7 @@ from django.urls import reverse
 import nh3
 from .mixins import HtmlSanitizedTextField
 
+
 class Post(models.Model):
     title = models.CharField(max_length=200)
     content = HtmlSanitizedTextField()

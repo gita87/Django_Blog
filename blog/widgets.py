@@ -14,4 +14,4 @@ class TrixEditorWidget(forms.Widget):
 
         trix_editor = f'<trix-editor input="{final_attrs["id"]}" class="trix-content" role="textbox" trix-id="1" id="myTrixEditor">{value}</trix-editor>'
 
-        return mark_safe(trix_editor)
+        return trix_editor

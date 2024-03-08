@@ -2,6 +2,7 @@
 from copy import deepcopy
 import nh3
 from django import template
+from django.template.defaultfilters import stringfilter
 
 register = template.Library()
 
@@ -24,9 +25,20 @@ allowed_attributes = {
 for tag, attrs in allowed_attributes.items():
     attributes[tag] = attributes.get(tag, set()).union(attrs)
 
+
 @register.filter(name='sanitize_html')
 def sanitize_html(value):
     # Clean HTML using nh3
+
+    print("value :", value)
     cleaned_value = nh3.clean(value, attributes=attributes)
-    print("cleaned_value : ",cleaned_value)
+    print("cleaned_value : ", cleaned_value)
     return cleaned_value
+
+
+@register.filter(name='replace_urls')
+@stringfilter
+def replace_urls(value, replacements):
+    for old_url, new_url in replacements.items():
+        value = value.replace(old_url, new_url)
+    return value

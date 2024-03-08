@@ -1,22 +1,113 @@
-{% extends 'blog/base.html' %}
-{% load crispy_forms_tags %}
-
-{% block content %}
+{% extends 'blog/base.html' %} {% load crispy_forms_tags %} {% block content %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
   $(document).ready(function () {
+    const csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+    // Get the current window's protocol, hostname, and port
+    var baseUrl =
+      window.location.protocol +
+      "//" +
+      window.location.hostname +
+      (window.location.port ? ":" + window.location.port : "");
     checkAndDisplayErrors();
 
     $(".close-error").click(function () {
       $(".form-error").hide();
     });
-  });
 
-  function checkAndDisplayErrors() {
-    if ($(".form-error").length) {
-      $(".form-error").show();
+    // Bind the form submission event
+    $("form").submit(function (event) {
+      // Prevent the default form submission
+      event.preventDefault();
+
+      // Iterate through all img elements
+      $("#myTrixEditor > div > figure > img").each(function () {
+        // Get the src attribute
+        var imageUrl = $(this).attr("src");
+
+        // Fetch the image and convert to base64
+        fetchAndConvertToBase64(imageUrl);
+      });
+
+      // After processing images, trigger the original form submission
+      submitForm();
+    });
+
+    function fetchAndConvertToBase64(imageUrl) {
+      // Store the original blob URL
+      var originalBlobUrl = imageUrl;
+
+      fetch(imageUrl)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const reader = new FileReader();
+          reader.onloadend = function () {
+            const base64Data = reader.result.split(",")[1];
+
+            // Get the file extension from the blob
+            const fileExtension = blob.type.split("/")[1];
+
+            // Send the base64Data, originalBlobUrl, and fileExtension to your API
+            sendImageDataToServer(base64Data, originalBlobUrl, fileExtension);
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch((error) => console.error("Error fetching image:", error));
     }
-  }
+
+    function sendImageDataToServer(base64Data, originalBlobUrl, fileExtension) {
+      // Your API endpoint URL
+      var apiUrl = `${baseUrl}/api/upload-image/`;
+
+      // Make a POST request to your API with the base64Data, originalBlobUrl, and fileExtension
+      fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image_data: base64Data,
+          image_blob: originalBlobUrl,
+          image_extension: fileExtension,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("API Response:", data);
+          // Assuming your image elements have a specific class, update the src attribute
+          if (data.success) {
+            var imageElements = document.querySelectorAll('#myTrixEditor > div > figure > img');
+            if (imageElements) {
+              imageElements.forEach(function (imageElement) {
+                var originalSrc = imageElement.getAttribute('src');
+                console.log('Original Src:', originalSrc);
+                console.log('Blob URL:', originalBlobUrl);
+                if (originalSrc && originalSrc.startsWith(originalBlobUrl)) {
+                  imageElement.src = originalSrc.replace(originalBlobUrl, baseUrl + data.url);
+                  console.log('Updated Src:', imageElement.src);
+                }
+              });
+            }
+          }
+        })
+        .catch((error) =>
+          console.error("Error sending data to API:", error)
+        );
+    }
+
+    function submitForm() {
+      // Trigger the original form submission
+      $("form")[0].submit();
+    }
+
+    function checkAndDisplayErrors() {
+      if ($(".form-error").length) {
+        $(".form-error").show();
+      }
+    }
+  });
 
   document.addEventListener('DOMContentLoaded', function () {
     var trixEditor = document.getElementById('myTrixEditor');
@@ -36,31 +127,40 @@
   });
 </script>
 
+
 <div class="content-section">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <fieldset class="form-group">
       <legend class="border-bottom mb-4">New Post</legend>
       {% if form.errors %}
-        <div class="form-error alert alert-warning alert-dismissible fade show text-left" role="alert">
-          <div class="d-flex align-items-center">
-            <ul class="errors-list mb-0 pl-3">
-              {% for field, errors in form.errors.items %}
-                {% for error in errors %}
-                  <li>This field is required: {{ field|title }}</li>
-                {% endfor %}
+      <div
+        class="form-error alert alert-warning alert-dismissible fade show text-left"
+        role="alert"
+      >
+        <div class="d-flex align-items-center">
+          <ul class="errors-list mb-0 pl-3">
+            {% for field, errors in form.errors.items %}
+              {% for error in errors%}
+              <li>This field is required: {{ field|title }}</li>
               {% endfor %}
-            </ul>
-            <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
+            {% endfor %}
+          </ul>
+          <button
+            type="button"
+            class="close ml-auto"
+            data-dismiss="alert"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
-      {% endif %}
+      </div>
+      {% endif %} 
       {{ form|crispy }}
-      <input type="hidden" name="content" id="id_content">
+      <input type="hidden" name="content" id="id_content" />
       {% if post %}
-        <input type="hidden" id="initialContent" value="{{ post.content }}">
+      <input type="hidden" id="initialContent" value="{{ post.content }}" />
       {% endif %}
     </fieldset>
     <div class="form-group">
@@ -68,7 +168,10 @@
     </div>
   </form>
   <div class="border-top pt-3">
-    <small class="text-muted">Already have an account? <a href="{% url 'blog-home' %}">Go Back</a></small>
+    <small class="text-muted"
+      >Already have an account?
+      <a href="{% url 'blog-home' %}">Go Back</a></small
+    >
   </div>
 </div>
 
@@ -80,8 +183,6 @@
 
 <!-- Your existing styles -->
 
-
-  
 <style>
   .content-section {
     padding-top: 100px;

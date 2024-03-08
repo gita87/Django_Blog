@@ -95,3 +95,5 @@ venv/
 .vercel
 node_modules/
 dist/
+
+media/*.png

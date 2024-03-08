@@ -1,21 +1,20 @@
-{% extends 'blog/base.html' %}
-{% load safe_filters %}
+{% extends 'blog/base.html' %} {% load safe_filters %} {% block content %}
 
-{% block content %}
-<div class="content-section">
-
-    <h1>Blog Home</h1>
-    <hr>
-    {% for post in posts %}
-        <h3><a href="{% url 'blog-detail' post.id %}">{{post.title}}</a></h3>
-        <p>By: {{post.author}} on {{post.date_posted}}</p>
-        <p>{{ post.content|truncatechars:300|safe }}</p>
-        {% if post.content|length > 300 %}
-            <a href="{% url 'blog-detail' post.id %}">Read more</a>
-        {% endif %}
-        <br>
-        <hr>
-    {% endfor %}
-</div>
+<article class="media content-section">
+  <div class="media-body">
+    <div class="article-metadata">
+      <h1>Blog Home</h1>
+      {% for post in posts %}
+      <hr />
+      <h3><a href="{% url 'blog-detail' post.id %}">{{post.title}}</a></h3>
+      <p>By: {{post.author}} on {{post.date_posted}}</p>
+      <p class="article-content">{{ post.content|truncatechars:300|safe }}</p>
+      {% if post.content|length > 300 %}
+      <a href="{% url 'blog-detail' post.id %}">Read more</a>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</article>
 
 {% endblock content %}

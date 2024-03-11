@@ -2,13 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.urls import reverse
-import nh3
-from .mixins import HtmlSanitizedTextField
+from bs4 import BeautifulSoup
+from api.models import UploadedImage  # Import UploadedImage model
+import re
 
 
 class Post(models.Model):
     title = models.CharField(max_length=200)
-    content = HtmlSanitizedTextField()
+    content = models.TextField()
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -19,35 +20,45 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('blog-detail', kwargs={'pk': self.pk})
 
-    def save(self, *args, **kwargs):
-        if self.image:
-            # Constructing HTML content with the image
-            self.content = f'<p><img alt="" src="{self.image.url}" style="max-width:100%; height:auto;"></p>'
+    @staticmethod
+    def extract_uuid_from_string(input_string):
+        # Define a regular expression pattern to match the UUID
+        uuid_pattern = re.compile(r'imageElement/\d+/blob:http://\S+/(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})/\d+/\d+')
 
-            # Sanitize the HTML content
-            self.content = self.sanitize_html(self.content)
+        # Search for the pattern in the input string
+        match = uuid_pattern.search(input_string)
 
-        super().save(*args, **kwargs)
+        # If a match is found, return the extracted UUID, otherwise return None
+        if match:
+            return match.group(1)
+        else:
+            return None
 
-    def sanitize_html(value):
-        # Create a deep copy of ALLOWED_ATTRIBUTES
-        attributes = nh3.ALLOWED_ATTRIBUTES.copy()
+    @staticmethod
+    def replace_blob_urls(html_content):
+        # Parse HTML content using BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
 
-        # Define additional attributes for each tag
-        additional_attributes = {
-            'a': ['href', 'title'],
-            'img': ['src', 'alt', 'style', 'data-trix-mutable', 'data-trix-serialized-attributes', 'data-trix-store-key', 'data-invert'],
-            'span': ['data-trix-cursor-target', 'data-trix-serialize'],
-            'progress': ['class', 'value', 'max', 'data-trix-mutable', 'data-trix-store-key'],
-            'trix-editor': ['input', 'class', 'role', 'trix-id', 'contenteditable', 'toolbar']
-            # Add more allowed attributes as needed
-        }
+        # Find all image elements with data-trix-store-key attribute
+        image_elements = soup.find_all('img', {'data-trix-store-key': True})
+        print("image_elements : ", image_elements)
+        # Find all image elements with src attribute starting with blob
+        for img in image_elements:
+            # Extract UUID from the blob URL
+            uuid = Post.extract_uuid_from_string(str(img))
 
-        # Update ALLOWED_ATTRIBUTES with additional attributes
-        for tag, attrs in additional_attributes.items():
-            attributes[tag] = attributes.get(tag, set()).union(attrs)
+            print(uuid)
 
-        # Clean HTML using nh3
-        cleaned_value = nh3.clean(value, attributes=attributes)
+            if uuid:
+                # Search for matching UUID in the UploadedImage table
+                matching_image = UploadedImage.objects.filter(
+                    filename__startswith=uuid
+                )
 
-        return cleaned_value
+                print(matching_image)
+
+                if matching_image:
+                    # Replace the src attribute with the UploadedImage URL
+                    img['src'] = matching_image[0].url
+
+        return str(soup)

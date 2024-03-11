@@ -276,5 +276,17 @@
       integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
       crossorigin="anonymous"
     ></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          // Select all img elements
+          var images = document.querySelectorAll("img");
+
+          // Apply styles to each image
+          images.forEach(function(img) {
+              img.style.maxWidth = "100%";
+              img.style.height = "auto";  
+          });
+      });
+  </script>
   </body>
 </html>

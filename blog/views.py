@@ -9,7 +9,8 @@ from django.views.generic import (
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import PostForm
 from .templatetags.safe_filters import sanitize_html
-
+from bs4 import BeautifulSoup
+from api.models import UploadedImage
 
 def about(request):
     latest_gists = Post.objects.order_by('-date_posted')[:3]
@@ -70,6 +71,9 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         # Sanitize HTML content using the sanitize_html function
         form.instance.content = sanitize_html(form.cleaned_data['content'])
 
+        # Replace blob URLs with actual URLs in the content
+        form.instance.content = Post.replace_blob_urls(form.instance.content)
+
         return super().form_valid(form)
 
 
@@ -88,17 +92,11 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        print(get_object_or_404(Post, pk=self.kwargs['pk']))
         post = self.get_object()
         kwargs['instance'] = post
         return kwargs
 
     def form_valid(self, form):
-        print("form", form)
-        print("form.cleaned_data['content'] ", form.cleaned_data['content'])
-        # Sanitize HTML content using the sanitize_html function
-        form.instance.content = sanitize_html(form.cleaned_data['content'])
-
         # Handle form validation and saving
         return super().form_valid(form)
 

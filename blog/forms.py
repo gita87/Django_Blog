@@ -1,7 +1,6 @@
 from django import forms
 from .models import Post
 from .widgets import TrixEditorWidget
-import sys
 
 
 class PostForm(forms.ModelForm):

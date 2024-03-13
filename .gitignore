@@ -97,3 +97,8 @@ node_modules/
 dist/
 
 media/*.png
+media/*.jpeg
+media/*.jpg
+media/profile_pics/*.jpg
+media/profile_pics/*.png
+media/profile_pics/*.jpeg

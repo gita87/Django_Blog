@@ -11,13 +11,29 @@ Blogging Website made with Django
    cp .env.sample .env
    ```
 
-3. **Run Docker Compose:**
+3. **Build Docker Postgre:**
    ```bash
-    docker-compose -f docker-compose.prod.yml up -d
+   sh docker_build_postgesdb.sh
    ```
 
-4. **Access the Application:**
+4. **Activate Virtual Environment and Install Package :**
+   ```bash
+   python3 -m venv venv
+   source ./venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+5. **Create a migration and a superuser :**
+   ```bash
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
+
+4. **Run Gunicorn:**
+   ```bash
+   gunicorn --bind 0.0.0.0:8000 blog_project.wsgi:application
+   ```
+
+5. **Access the Application:**
    - Open your web browser.
    - Navigate to the corresponding address and port specified in your Docker setup. Typically, it might be [http://localhost:8000/](http://localhost:8000/).
-
-These steps assume that the repository contains a Dockerized Django application, and the `docker-compose.yml` file is configured to run the application. Adjust the commands and URLs based on your specific project structure and configurations.

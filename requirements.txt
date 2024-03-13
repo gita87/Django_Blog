@@ -13,12 +13,15 @@ django-summernote==0.8.20.0
 django-tinymce==3.7.1
 django-trix==0.3.0
 djangorestframework==3.14.0
+exceptiongroup==1.2.0
+gunicorn==21.2.0
 h11==0.14.0
 html-sanitizer==2.3.0
 httptools==0.6.1
 idna==3.6
 lxml==5.1.0
 nh3==0.2.15
+packaging==24.0
 pillow==10.2.0
 psycopg2-binary==2.9.9
 python-dotenv==1.0.1

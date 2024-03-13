@@ -11,10 +11,10 @@ done
 echo 'PostgreSQL is ready'
 
 echo 'Running migrations...'
-python manage.py migrate
+/app/venv/bin/python /app/manage.py migrate
 
 echo 'Collecting static files...'
-python manage.py collectstatic --no-input
+/app/venv/bin/python /app/manage.py collectstatic --no-input
 
 echo 'Starting the application...'
-exec gunicorn --bind 0.0.0.0:8000 blog_project.wsgi:application
+exec /app/venv/bin/gunicorn --bind 0.0.0.0:8000 blog_project.wsgi:application

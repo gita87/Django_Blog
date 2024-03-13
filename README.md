@@ -6,34 +6,21 @@ Blogging Website made with Django
    git clone https://github.com/gita87/Django_Blog.git
    ```
 
-2. **Copy Environment Variables Sample:**
+2. **Copy Environment Variables Sample :**
    ```bash
    cp .env.sample .env
    ```
 
-3. **Build Docker Postgre:**
+3. **Build Docker Containers :**
    ```bash
-   sh docker_build_postgesdb.sh
+   docker-compose up -d --build
    ```
 
-4. **Activate Virtual Environment and Install Package :**
+4. **Create Superuser :**
    ```bash
-   python3 -m venv venv
-   source ./venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-5. **Create a migration and a superuser :**
-   ```bash
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
-
-4. **Run Gunicorn:**
-   ```bash
-   gunicorn --bind 0.0.0.0:8000 blog_project.wsgi:application
+   docker exec -it django-blog-template-web sh -c "/app/venv/bin/python /app/manage.py createsuperuser"
    ```
 
 5. **Access the Application:**
    - Open your web browser.
-   - Navigate to the corresponding address and port specified in your Docker setup. Typically, it might be [http://localhost:8000/](http://localhost:8000/).
+   - Navigate to the corresponding address and port specified in your Docker setup. Typically, it might be [http://localhost:1337/](http://localhost:1337/).

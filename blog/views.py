@@ -18,8 +18,7 @@ def about(request):
     return render(request, 'blog/about.html', context)
 
 
-class PostListView(LoginRequiredMixin,
-                   ListView):
+class PostListView(ListView):
     model = Post
     template_name = 'blog/home.html'
     context_object_name = 'posts'
@@ -32,7 +31,7 @@ class PostListView(LoginRequiredMixin,
         return context
 
 
-class PostDetailView(LoginRequiredMixin, DetailView):
+class PostDetailView(DetailView):
     model = Post
     template_name = 'blog/post_detail.html'
 
@@ -40,19 +39,7 @@ class PostDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['latest_gists'] = Post.objects.order_by('-date_posted')[:3]
 
-        # Extract and pass the UUID to the context
-        context['image_uuid'] = self.extract_uuid_from_content()
-
         return context
-
-    def extract_uuid_from_content(self):
-        post = self.get_object()
-        uuid_match = re.search(r'blob:http://127.0.0.1:8000/(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})/', post.content)
-
-        if uuid_match:
-            return uuid_match.group(1)
-
-        return None
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):

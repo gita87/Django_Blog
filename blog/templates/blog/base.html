@@ -298,13 +298,14 @@
       document.addEventListener("DOMContentLoaded", function() {
           // Select all img elements
           var images = document.querySelectorAll("img");
-
-          // Apply styles to each image
+  
+          // Apply attributes to each image
           images.forEach(function(img) {
-              img.style.maxWidth = "100%";
-              img.style.height = "auto";  
+              img.setAttribute("max-width", "100%");
+              img.setAttribute("height", "auto");
           });
       });
   </script>
+  
   </body>
 </html>

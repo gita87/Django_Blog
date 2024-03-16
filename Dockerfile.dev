@@ -1,0 +1,29 @@
+# Use an official Python 3.12 Alpine image as the base image
+FROM python:3.12-alpine
+
+# Install system dependencies
+RUN apk --update add --virtual build-dependencies \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    build-base \
+    postgresql-dev \
+    && apk add postgresql-client  # Add PostgreSQL client
+
+# Set the working directory
+WORKDIR /usr/src/app
+
+# Copy the requirements.txt file into the container at /usr/src/app
+COPY requirements.txt .
+
+# Copy the entire application code and set permissions
+COPY . .
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DEBUG 1  # Set DEBUG to 1 for dev
+
+RUN chmod +x /usr/src/app/entrypoint.sh
+# Set the entrypoint script
+ENTRYPOINT ["/usr/src/app/entrypoint.dev.sh"]

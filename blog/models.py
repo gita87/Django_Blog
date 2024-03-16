@@ -61,4 +61,17 @@ class Post(models.Model):
                     # Replace the src attribute with the UploadedImage URL
                     img['src'] = matching_image[0].url
 
+        # Find all figure elements containing images
+        figure_elements = soup.find_all('figure')
+
+        # Loop through each figure element
+        for figure in figure_elements:
+            # Unwrap the figure element and keep its children
+            figure.unwrap()
+
+        # Find and remove all figcaption elements
+        figcaption_elements = soup.find_all('figcaption')
+        for figcaption in figcaption_elements:
+            figcaption.decompose()
+
         return str(soup)

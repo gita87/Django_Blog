@@ -5,7 +5,7 @@
 {% block content %}
     <article class="media content-section">
         <img class="rounded-cirlce article-img" src="{{ object.author.profile.image.url }}" alt="">
-        <div class="media-body">
+        <div class="media-body" id="article-container" style="word-wrap: break-word;">
             <div class="article-metadata">
                 <a class="mr-2" href="#">{{ object.author }}</a>
                 <small class="text-muted">{{ object.date_posted }}</small> <br>
@@ -19,7 +19,14 @@
             <h2><a class="article-title" href="#">{{ object.title }}</a></h2>
             <p class="article-content">{{ object.content|safe }}</p>
 
-          </div>
+        </div>
+        <style>
+            #article-container {
+                width: 100%;
+                margin: auto;
+                overflow: auto;
+            }
+        </style>
         <br>
     </article>
 {% endblock content %}

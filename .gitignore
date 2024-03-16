@@ -102,3 +102,7 @@ media/*.jpg
 media/profile_pics/*.jpg
 media/profile_pics/*.png
 media/profile_pics/*.jpeg
+
+
+# Collected staticfiles
+staticfiles/

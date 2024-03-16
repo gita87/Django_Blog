@@ -1,5 +1,4 @@
 # blog/views.py
-import re
 from django.shortcuts import render, get_object_or_404
 
 from .models import Post
@@ -9,8 +8,7 @@ from django.views.generic import (
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import PostForm
 from .templatetags.safe_filters import sanitize_html
-from bs4 import BeautifulSoup
-from api.models import UploadedImage
+
 
 def about(request):
     latest_gists = Post.objects.order_by('-date_posted')[:3]
@@ -53,9 +51,10 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        form.instance.author = self.request.user  # Set the author before saving
+        # Set the author before saving
+        form.instance.author = self.request.user
 
-        # Sanitize HTML content using the sanitize_html function
+        # Sanitize HTML content
         form.instance.content = sanitize_html(form.cleaned_data['content'])
 
         # Replace blob URLs with actual URLs in the content
@@ -84,6 +83,12 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return kwargs
 
     def form_valid(self, form):
+        # Sanitize HTML content
+        form.instance.content = sanitize_html(form.cleaned_data['content'])
+
+        # Replace blob URLs with actual URLs in the content
+        form.instance.content = Post.replace_blob_urls(form.instance.content)
+
         # Handle form validation and saving
         return super().form_valid(form)
 

@@ -1,14 +1,17 @@
-{% extends 'blog/base.html' %} {% load safe_filters %} {% block content %}
+{% extends 'blog/base.html' %}
+{% load safe_filters %}
 
+{% block content %}
 <article class="media content-section">
-  <div class="media-body">
+  <div class="media-body" id="article-container" style="word-wrap: break-word;">
     <div class="article-metadata">
       <h1>Blog Home</h1>
       {% for post in posts %}
       <hr />
       <h3><a href="{% url 'blog-detail' post.id %}">{{post.title}}</a></h3>
       <p>By: {{post.author}} on {{post.date_posted}}</p>
-      <p class="article-content">{{ post.content|truncatechars:300|safe }}</p>
+      {{ post.content|truncatechars:250|safe }}
+      <br>
       {% if post.content|length > 300 %}
       <a href="{% url 'blog-detail' post.id %}">Read more</a>
       {% endif %}
@@ -16,5 +19,25 @@
     </div>
   </div>
 </article>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Select all img elements
+    var images = document.querySelectorAll("img");
 
+    // Replace each img element with <p>[IMAGE]</p>
+    images.forEach(function(img) {
+      var imageText = document.createElement("p");
+      imageText.textContent = "[IMAGE]";
+      img.parentNode.replaceChild(imageText, img);
+    });
+  });
+</script>
+
+<style>
+  #article-container {
+    width: 100%;
+    margin: auto;
+    overflow: auto;
+  }
+</style>
 {% endblock content %}

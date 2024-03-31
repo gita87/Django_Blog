@@ -44,15 +44,6 @@ body {
    margin-bottom: 20px;
  }
 
- .article-title {
-   color: #444444;
- }
-
- a.article-title:hover {
-   color: #9900ff;
-   text-decoration: none;
- }
-
  .article-content {
    white-space: pre-line;
  }

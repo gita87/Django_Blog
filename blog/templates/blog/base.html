@@ -1,5 +1,4 @@
-{% load static %}
-{% load safe_filters %}
+{% load static %} {% load safe_filters %}
 
 <!DOCTYPE html>
 <html>
@@ -25,9 +24,7 @@
     />
     {% comment %} JQuery {% endcomment %}
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-   {{ form.media.css }} 
-   {{form.media.js }}
-
+    {{ form.media.css }} {{form.media.js }}
   </head>
   <body>
     <header class="site-header">
@@ -130,20 +127,28 @@
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
               {% if user.is_authenticated %}
-              <a class="nav-item nav-link" id="auth-links" href="{% url 'blog-home' %}">
+              <a
+                class="nav-item nav-link"
+                id="auth-links"
+                href="{% url 'blog-home' %}"
+              >
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
-                HOME</a>
-              <a class="nav-item nav-link" id="auth-links" href="{% url 'blog-about' %}">
+                HOME</a
+              >
+              <a
+                class="nav-item nav-link"
+                id="auth-links"
+                href="{% url 'blog-about' %}"
+              >
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
-                ABOUT</a>
-
-
+                ABOUT</a
+              >
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
@@ -169,18 +174,28 @@
                 Logout
               </a>
               {% else %}
-              <a class="nav-item nav-link" id="auth-links" href="{% url 'blog-home' %}">
+              <a
+                class="nav-item nav-link"
+                id="auth-links"
+                href="{% url 'blog-home' %}"
+              >
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
-                HOME</a>
-              <a class="nav-item nav-link" id="auth-links" href="{% url 'blog-about' %}">
+                HOME</a
+              >
+              <a
+                class="nav-item nav-link"
+                id="auth-links"
+                href="{% url 'blog-about' %}"
+              >
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
-                ABOUT</a>
+                ABOUT</a
+              >
               <a href="{% url 'login' %}" id="auth-links">
                 <span></span>
                 <span></span>
@@ -209,47 +224,7 @@
           {% endfor %} {% endif %}
         </div>
         <div class="col-md-8">{% block content %}{% endblock %}</div>
-        <!-- Add this section in the <div class="col-md-4"> -->
-        <div class="col-md-4">
-          <div class="content-sectionw">
-            <div
-              class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white"
-              style="width: 380px"
-            >
-              <a
-                id="list-group"
-                style="text-decoration: none"
-                href=""
-                class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom"
-              >
-                <span class="fs-5 fw-semibold" id="gist-btn">Latest Gist</span>
-              </a>
-              {% if latest_gists %}
-              <div class="list-group list-group-flush border-bottom scrollarea">
-                {% for gist in latest_gists %}
-                <a
-                  href="{% url 'blog-detail' gist.id %}"
-                  class="list-group-item list-group-item-action lh-tight"
-                >
-                  <div
-                    class="d-flex w-100 align-items-center justify-content-between"
-                  >
-                    <strong class="mb-1">{{ gist.title }}</strong>
-                    <small>{{ gist.date }}</small>
-                  </div>
-                  <div class="col-10 mb-1 small">
-                    {{ gist.content|truncatechars:100|safe}}
-                  </div>  
-                  {% if gist.content|length > 100 %} {% endif %}
-                </a>
-                {% endfor %}
-              </div>
-              {% else %}
-              <p>No gists available at the moment.</p>
-              {% endif %}
-            </div>
-          </div>
-        </div>
+
       </div>
 
       <footer class="">
@@ -295,17 +270,31 @@
       crossorigin="anonymous"
     ></script>
     <script>
-      document.addEventListener("DOMContentLoaded", function() {
-          // Select all img elements
-          var images = document.querySelectorAll("img");
-  
-          // Apply attributes to each image
-          images.forEach(function(img) {
-              img.setAttribute("max-width", "100%");
-              img.setAttribute("height", "auto");
-          });
+      document.addEventListener("DOMContentLoaded", function () {
+        // Select all img elements
+        var images = document.querySelectorAll("img");
+
+        // Apply attributes and center each image
+        images.forEach(function (img) {
+          img.setAttribute("max-width", "100%");
+          img.setAttribute("height", "auto");
+          img.style.display = "block";
+          img.style.marginLeft = "auto";
+          img.style.marginRight = "auto";
+        });
       });
-  </script>
-  
+    </script>
+    <style>
+      .article-title {
+        color: #444444;
+        font-weight: bold; /* Make the text bold */
+        font-size: smaller; /* Make the text smaller */
+      }
+     
+      a.article-title:hover {
+        color: #9900ff;
+        text-decoration: none;
+      }
+    </style>
   </body>
 </html>

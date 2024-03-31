@@ -1,32 +1,92 @@
 <!-- blog/templates/blog/post_detail.html -->
-{% extends 'blog/base.html' %}
-{% load safe_filters %}
-
-{% block content %}
-    <article class="media content-section">
-        <img class="rounded-cirlce article-img" src="{{ object.author.profile.image.url }}" alt="">
-        <div class="media-body" id="article-container" style="word-wrap: break-word;">
-            <div class="article-metadata">
-                <a class="mr-2" href="#">{{ object.author }}</a>
-                <small class="text-muted">{{ object.date_posted }}</small> <br>
-                {% if object.author == user %}
-                    <div>
-                        <a class="btn btn-outline-success" href="{% url 'blog-update' object.id %}">Update</a>
-                        <a class="btn btn-outline-danger" href="{% url 'blog-delete' object.id %}">Delete</a>
-                    </div>
-                {% endif %}
-            </div>
-            <h2><a class="article-title" href="#">{{ object.title }}</a></h2>
-            <p class="article-content">{{ object.content|safe }}</p>
-
+{% extends 'blog/base.html' %} {% load safe_filters %} {% block content %} {% if
+latest_gists %}
+<div class="list-group list-group-flush border-bottom scrollarea">
+  <!-- Add this section in the <div class="col-md-4"> -->
+  <article class="media content-section">
+    <img
+      class="rounded-cirlce article-img"
+      src="{{ object.author.profile.image.url }}"
+      alt=""
+    />
+    <div
+      class="media-body"
+      id="article-container"
+      style="word-wrap: break-word"
+    >
+      <div class="article-metadata">
+        <a class="mr-2" href="#">{{ object.author }}</a>
+        <small class="text-muted">{{ object.date_posted }}</small> <br />
+        {% if object.author == user %}
+        <div>
+          <a
+            class="btn btn-outline-success"
+            href="{% url 'blog-update' object.id %}"
+            >Update</a
+          >
+          <a
+            class="btn btn-outline-danger"
+            href="{% url 'blog-delete' object.id %}"
+            >Delete</a
+          >
         </div>
-        <style>
-            #article-container {
-                width: 100%;
-                margin: auto;
-                overflow: auto;
-            }
-        </style>
-        <br>
-    </article>
-{% endblock content %}
+        {% endif %}
+      </div>
+      <h2><a class="article-title" href="#">{{ object.title }}</a></h2>
+      <p class="article-content">{{ object.content|safe }}</p>
+    </div>
+    <style>
+      #article-container {
+        width: 100%;
+        margin: auto;
+        overflow: auto;
+      }
+    </style>
+    <br />
+  </article>
+
+  <div class="col-md-4">
+    <div class="content-sectionw">
+      <div
+        class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white"
+        style="width: 380px"
+      >
+        <a
+          id="list-group"
+          style="text-decoration: none"
+          href=""
+          class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom"
+        >
+          <span class="fs-5 fw-semibold" id="gist-btn">Latest Gist</span>
+        </a>
+        {% if latest_gists %}
+        <div class="list-group list-group-flush border-bottom scrollarea">
+          {% for gist in latest_gists %}
+          <a
+            href="{% url 'blog-detail' gist.id %}"
+            class="list-group-item list-group-item-action lh-tight"
+          >
+            <div
+              class="d-flex w-100 align-items-center justify-content-between"
+            >
+              <strong class="mb-1">{{ gist.title }}</strong>
+              <small>{{ gist.date }}</small>
+            </div>
+            <div class="col-10 mb-1 small">
+              {{ gist.content|truncatechars:100|safe}}
+            </div>
+            {% if gist.content|length > 100 %} {% endif %}
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p>No gists available at the moment.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% endblock content %}
+
+
+

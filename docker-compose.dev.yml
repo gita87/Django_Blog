@@ -10,6 +10,7 @@ services:
       - 8000
     volumes:
       - .:/usr/src/app/
+      - ./venv/:/usr/src/app/venv/
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
     env_file:
@@ -34,10 +35,10 @@ services:
   nginx:
     build:
       context: ./nginx
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: django-blog-template-nginx-dev
     volumes:
-      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/nginx.dev.conf
+      - ./nginx/:/etc/nginx/conf.d/
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
     ports:

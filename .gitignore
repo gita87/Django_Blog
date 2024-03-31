@@ -106,3 +106,5 @@ media/profile_pics/*.jpeg
 
 # Collected staticfiles
 staticfiles/
+
+!media/logo.png

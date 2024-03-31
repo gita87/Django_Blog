@@ -38,7 +38,7 @@ services:
       dockerfile: Dockerfile
     container_name: django-blog-template-nginx-dev
     volumes:
-      - ./nginx/:/etc/nginx/conf.d/
+      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/nginx.conf
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
     ports:

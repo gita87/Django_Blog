@@ -36,8 +36,11 @@ services:
       - ./nginx:/etc/nginx/conf.d
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      - /etc/letsencrypt/live/datalizing.pro/fullchain.pem:/etc/letsencrypt/live/datalizing.pro/fullchain.pem
+      - /etc/letsencrypt/live/datalizing.pro/privkey.pem:/etc/letsencrypt/live/datalizing.pro/privkey.pem
     ports:
       - 80:80
+      - 443:443
     depends_on:
       - web
 

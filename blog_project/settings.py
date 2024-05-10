@@ -31,7 +31,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:80', 'http://85.31.232.226','http://datalizing.pro/']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:80', 'http://85.31.232.226','http://datalizing.pro', 'https://datalizing.pro']
 
 # Application definition
 

@@ -20,97 +20,108 @@
 
   $(document).ready(function () {
     const csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
-    var baseUrl =
-      window.location.protocol +
-      '//' +
-      window.location.hostname +
-      (window.location.port ? ':' + window.location.port : '');
+    var baseUrl = window.location.origin;
 
     $(".close-error").click(function () {
-      $(".form-error").hide();
+        $(".form-error").hide();
     });
 
     $("form").submit(async function (event) {
-      event.preventDefault();
+        event.preventDefault();
 
-      // Iterate through all img elements
-      var imageElements = Array.from(document.querySelectorAll('#myTrixEditor > div > figure > img'));
+        // Iterate through all img elements
+        var imageElements = Array.from(document.querySelectorAll('#myTrixEditor > div > figure > img'));
 
-      for (const imageElement of imageElements) {
-        // Get the src attribute
-        var imageUrl = imageElement.src;
+        for (const imageElement of imageElements) {
+            // Get the src attribute
+            var imageUrl = imageElement.src;
+            console.log(`Image URL : ${imageUrl}`);
 
-        // Fetch the image and convert to base64
-        const { base64Data, originalBlobUrl, fileExtension } = await fetchAndConvertToBase64(imageUrl);
+            // Fetch the image and convert to base64
+            const { base64Data, originalBlobUrl } = await fetchAndConvertToBase64(imageUrl);
 
-        // Send the base64Data, originalBlobUrl, and fileExtension to your API
-        const data = await sendImageDataToServer(base64Data, originalBlobUrl, fileExtension);
+            // Extract filename from the image URL
+            const filename = imageUrl.split('/').pop().split('.')[0];
 
-        // Assuming your image elements have a specific class, update the src attribute
-        if (data.success) {
-          updateImageSrc(imageElements, imageUrl, originalBlobUrl, data.url);
+            // Extract extension from the figure's data-trix-attachment attribute
+            const figure = imageElement.closest('figure');
+            const filenameAttr = figure.getAttribute('data-trix-attachment');
+            const filenameObj = JSON.parse(filenameAttr);
+            const extension = filenameObj.filename.split('.').pop();
+
+            // Send the base64Data, originalBlobUrl, and fileExtension to your API
+            const data = await sendImageDataToServer(base64Data, imageUrl, extension, filename);
+
+            // Assuming your image elements have a specific class, update the src attribute
+            if (data.success) {
+                updateImageSrc(imageElements, imageUrl, data.url);
+            }
         }
-      }
 
-      // After processing images, trigger the original form submission
-      $("form")[0].submit();
+        // After processing images, trigger the original form submission
+        $("form")[0].submit();
     });
 
     async function fetchAndConvertToBase64(imageUrl) {
-      return new Promise((resolve, reject) => {
-        // Store the original blob URL
-        var originalBlobUrl = imageUrl;
-
-        fetch(imageUrl)
-          .then((response) => response.blob())
-          .then((blob) => {
-            const reader = new FileReader();
-            reader.onloadend = function () {
-              const base64Data = reader.result.split(',')[1];
-              // Get the file extension from the blob
-              const fileExtension = blob.type.split('/')[1];
-              resolve({ base64Data, originalBlobUrl, fileExtension });
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    const base64Data = reader.result;
+                    resolve({ base64Data, originalBlobUrl: imageUrl });
+                };
+                reader.onerror = function () {
+                    reject('Failed to convert image to base64.');
+                };
+                reader.readAsDataURL(xhr.response);
             };
-            reader.readAsDataURL(blob);
-          })
-          .catch((error) => reject(error));
-      });
+            xhr.onerror = function () {
+                reject('Failed to fetch image.');
+            };
+            xhr.open('GET', imageUrl);
+            xhr.responseType = 'blob';
+            xhr.send();
+        });
     }
 
-    async function sendImageDataToServer(base64Data, originalBlobUrl, fileExtension) {
-      // Your API endpoint URL
-      var apiUrl = `${baseUrl}/api/upload-image/`;
+    async function sendImageDataToServer(base64Data, originalBlobUrl, fileExtension, filename) {
+        // Your API endpoint URL
+        var apiUrl = `${baseUrl}/api/upload-image/`;
 
-      // Make a POST request to your API with the base64Data, originalBlobUrl, and fileExtension
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': csrfToken,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image_data: base64Data,
-          image_blob: originalBlobUrl,
-          image_extension: fileExtension,
-        }),
-      });
+        // Make a POST request to your API with the base64Data, originalBlobUrl, and fileExtension
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json', // Specify that the client expects JSON in response
+            },
+            body: JSON.stringify({
+                data: base64Data,
+                filename: filename,
+                extension: fileExtension,
+            }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Image upload failed');
-      }
-
-      return response.json();
-    }
-
-    function updateImageSrc(imageElements, imageUrl, originalBlobUrl, newUrl) {
-      imageElements.forEach(function (imageElement) {
-        var originalSrc = imageElement.getAttribute('src');
-        if (originalSrc && originalSrc.startsWith(originalBlobUrl)) {
-          imageElement.src = originalSrc.replace(originalBlobUrl, newUrl);
+        if (!response.ok) {
+            throw new Error('Image upload failed');
         }
-      });
+
+        return response.json();
     }
-  });
+
+    function updateImageSrc(imageElements, imageUrl, newUrl) {
+        imageElements.forEach(function (imageElement) {
+            var originalSrc = imageElement.getAttribute('src');
+            if (originalSrc === imageUrl) {
+                imageElement.src = newUrl;
+            }
+        });
+    }
+});
+
+
 </script>
 
 

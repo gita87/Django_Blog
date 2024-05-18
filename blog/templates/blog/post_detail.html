@@ -33,7 +33,7 @@ latest_gists %}
         {% endif %}
       </div>
       <h2><a class="article-title" href="#">{{ object.title }}</a></h2>
-      <p class="article-content">{{ object.content|safe }}</p>
+      <p class="article-content">{{ object.content|replace_img_src_with_base64|safe }}</p>
     </div>
     <style>
       #article-container {

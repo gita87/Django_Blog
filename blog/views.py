@@ -7,7 +7,7 @@ from django.views.generic import (
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import PostForm
-from .templatetags.safe_filters import sanitize_html
+from .templatetags.safe_filters import remove_figcaption, sanitize_html
 
 
 def about(request):
@@ -56,9 +56,10 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
         # Sanitize HTML content
         form.instance.content = sanitize_html(form.cleaned_data['content'])
-
+        form.instance.content = remove_figcaption(form.instance.content)
+        print("form.instance.content : " + form.instance.content)
         # Replace blob URLs with actual URLs in the content
-        form.instance.content = Post.replace_blob_urls(form.instance.content)
+        # form.instance.content = Post.replace_blob_urls(form.instance.content)
 
         return super().form_valid(form)
 

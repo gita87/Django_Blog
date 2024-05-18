@@ -30,7 +30,7 @@
 
       <script>
         // Get post content
-        var postContent = '{{ post.content|safe }}';
+        var postContent = '{{ post.content|replace_img_src_with_base64|safe }}';
 
         // Get the first image URL from post content
         var firstImage = postContent.match(/<img[^>]+src="?([^"\s]+)"?[^>]*\/>/);

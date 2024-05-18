@@ -1,50 +1,51 @@
 # views.py
-import base64
-import os
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.conf import settings
 from .serializers import UploadedImageSerializer
 
 
 class ImageUploadAPIView(APIView):
     def post(self, request, format=None):
         try:
-            base64_data = request.data.get("image_data")
-            image_url = request.data.get("image_blob")
-            image_extension = request.data.get("image_extension")
-            # Convert base64 data to image
-            image = base64.b64decode(base64_data)
-            image_filename = f"{image_url.split('/')[-1]}.{image_extension}"
-            image_filepath = os.path.join(settings.MEDIA_ROOT, image_filename)
+            base64_data = request.data.get("data")
+            filename = request.data.get("filename")
+            extension = request.data.get("extension")
 
-            # Save the image to the file
-            with open(image_filepath, "wb") as file:
-                file.write(image)
+            if not base64_data or not filename:
+                raise ValueError(
+                    "All 'data', 'extension', and 'filename'" +
+                    " fields are required."
+                    )
+
+            # Create the image data for the database
+            image_data = {
+                "filename": filename,
+                "data": base64_data,
+                "extension": extension
+            }
 
             # Save image information to the database
-            image_data = {
-                'filename': image_filename,
-                'url': f"/media/{image_filename}",
-            }
-            serializer = UploadedImageSerializer(data=image_data)  # Use the correct serializer
+            serializer = UploadedImageSerializer(data=image_data)
             if serializer.is_valid():
                 serializer.save()
+                return Response(
+                    {
+                        "success": True,
+                        "filename": filename,
+                        "data": base64_data
+                     },
+                    status=status.HTTP_201_CREATED,
+                )
             else:
-                raise Exception(serializer.errors)
+                raise ValueError(serializer.errors)
 
+        except Exception as e:
             return Response(
                 {
-                    "success": True,
-                    "filename": image_filename,
-                    "url": f"/media/{image_filename}"
+                    "success": False,
+                    "error": str(e)
                 },
-                status=status.HTTP_201_CREATED,
-            )
-        except Exception as e:
-            print("Bad Request : ", e)
-            return Response(
-                {"success": False, "error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )

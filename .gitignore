@@ -108,3 +108,6 @@ media/profile_pics/*.jpeg
 staticfiles/
 
 !media/logo.png
+
+*/migrations/
+**/migrations/

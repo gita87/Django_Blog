@@ -1,17 +1,22 @@
-{% extends 'blog/base.html' %} {% load crispy_forms_tags %} {% block content %}
+{% extends 'blog/base.html' %}
+{% load crispy_forms_tags %}
+{% load safe_filters %}
+
+{% block content %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var trixEditor = document.getElementById('myTrixEditor');
-    var contentInput = document.getElementById('id_content');
+  document.addEventListener("DOMContentLoaded", function () {
+    var trixEditor = document.getElementById("myTrixEditor");
+    var contentInput = document.getElementById("id_content");
+    var contentSection = document.querySelector('.content-section');
 
     if (trixEditor && contentInput) {
-      trixEditor.addEventListener('trix-change', function () {
+      trixEditor.addEventListener("trix-change", function () {
         contentInput.value = trixEditor.innerHTML;
       });
 
       // Initialize Trix editor with post content if available
-      var initialContent = document.getElementById('initialContent');
+      var initialContent = document.getElementById("initialContent");
       if (initialContent) {
         trixEditor.editor.loadHTML(initialContent.value);
       }
@@ -19,111 +24,128 @@
   });
 
   $(document).ready(function () {
-    const csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+    const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0].value;
     var baseUrl = window.location.origin;
 
     $(".close-error").click(function () {
-        $(".form-error").hide();
+      $(".form-error").hide();
     });
 
     $("form").submit(async function (event) {
-        event.preventDefault();
+      event.preventDefault();
 
-        // Iterate through all img elements
-        var imageElements = Array.from(document.querySelectorAll('#myTrixEditor > div > figure > img'));
+      // Iterate through all img elements
+      var imageElements = Array.from(
+        document.querySelectorAll("#myTrixEditor > div > figure > img")
+      );
 
-        for (const imageElement of imageElements) {
-            // Get the src attribute
-            var imageUrl = imageElement.src;
-            console.log(`Image URL : ${imageUrl}`);
+      for (const imageElement of imageElements) {
+        // Get the src attribute
+        var imageUrl = imageElement.src;
+        console.log(`Image URL : ${imageUrl}`);
 
-            // Fetch the image and convert to base64
-            const { base64Data, originalBlobUrl } = await fetchAndConvertToBase64(imageUrl);
-
-            // Extract filename from the image URL
-            const filename = imageUrl.split('/').pop().split('.')[0];
-
-            // Extract extension from the figure's data-trix-attachment attribute
-            const figure = imageElement.closest('figure');
-            const filenameAttr = figure.getAttribute('data-trix-attachment');
-            const filenameObj = JSON.parse(filenameAttr);
-            const extension = filenameObj.filename.split('.').pop();
-
-            // Send the base64Data, originalBlobUrl, and fileExtension to your API
-            const data = await sendImageDataToServer(base64Data, imageUrl, extension, filename);
-
-            // Assuming your image elements have a specific class, update the src attribute
-            if (data.success) {
-                updateImageSrc(imageElements, imageUrl, data.url);
-            }
+        // Skip processing if the image src is already in base64 format
+        if (imageUrl.startsWith("data:image/")) {
+          console.log("Image is already in base64 format, skipping upload.");
+          continue;
         }
 
-        // After processing images, trigger the original form submission
-        $("form")[0].submit();
+        // Fetch the image and convert to base64
+        const { base64Data, originalBlobUrl } = await fetchAndConvertToBase64(
+          imageUrl
+        );
+
+        // Extract filename from the image URL
+        const filename = imageUrl.split("/").pop().split(".")[0];
+
+        // Extract extension from the figure's data-trix-attachment attribute
+        const figure = imageElement.closest("figure");
+        const filenameAttr = figure.getAttribute("data-trix-attachment");
+        const filenameObj = JSON.parse(filenameAttr);
+        const extension = filenameObj.filename.split(".").pop();
+
+        // Send the base64Data, originalBlobUrl, and fileExtension to your API
+        const data = await sendImageDataToServer(
+          base64Data,
+          imageUrl,
+          extension,
+          filename
+        );
+
+        // Assuming your image elements have a specific class, update the src attribute
+        if (data.success) {
+          updateImageSrc(imageElements, imageUrl, data.url);
+        }
+      }
+
+      // After processing images, trigger the original form submission
+      $("form")[0].submit();
     });
 
     async function fetchAndConvertToBase64(imageUrl) {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                const reader = new FileReader();
-                reader.onloadend = function () {
-                    const base64Data = reader.result;
-                    resolve({ base64Data, originalBlobUrl: imageUrl });
-                };
-                reader.onerror = function () {
-                    reject('Failed to convert image to base64.');
-                };
-                reader.readAsDataURL(xhr.response);
-            };
-            xhr.onerror = function () {
-                reject('Failed to fetch image.');
-            };
-            xhr.open('GET', imageUrl);
-            xhr.responseType = 'blob';
-            xhr.send();
-        });
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          const reader = new FileReader();
+          reader.onloadend = function () {
+            const base64Data = reader.result;
+            resolve({ base64Data, originalBlobUrl: imageUrl });
+          };
+          reader.onerror = function () {
+            reject("Failed to convert image to base64.");
+          };
+          reader.readAsDataURL(xhr.response);
+        };
+        xhr.onerror = function () {
+          reject("Failed to fetch image.");
+        };
+        xhr.open("GET", imageUrl);
+        xhr.responseType = "blob";
+        xhr.send();
+      });
     }
 
-    async function sendImageDataToServer(base64Data, originalBlobUrl, fileExtension, filename) {
-        // Your API endpoint URL
-        var apiUrl = `${baseUrl}/api/upload-image/`;
+    async function sendImageDataToServer(
+      base64Data,
+      originalBlobUrl,
+      fileExtension,
+      filename
+    ) {
+      // Your API endpoint URL
+      var apiUrl = `${baseUrl}/api/upload-image/`;
 
-        // Make a POST request to your API with the base64Data, originalBlobUrl, and fileExtension
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json', // Specify that the client expects JSON in response
-            },
-            body: JSON.stringify({
-                data: base64Data,
-                filename: filename,
-                extension: fileExtension,
-            }),
-        });
+      // Make a POST request to your API with the base64Data, originalBlobUrl, and fileExtension
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json",
+          Accept: "application/json", // Specify that the client expects JSON in response
+        },
+        body: JSON.stringify({
+          data: base64Data,
+          filename: filename,
+          extension: fileExtension,
+        }),
+      });
 
-        if (!response.ok) {
-            throw new Error('Image upload failed');
-        }
+      if (!response.ok) {
+        throw new Error("Image upload failed");
+      }
 
-        return response.json();
+      return response.json();
     }
 
     function updateImageSrc(imageElements, imageUrl, newUrl) {
-        imageElements.forEach(function (imageElement) {
-            var originalSrc = imageElement.getAttribute('src');
-            if (originalSrc === imageUrl) {
-                imageElement.src = newUrl;
-            }
-        });
+      imageElements.forEach(function (imageElement) {
+        var originalSrc = imageElement.getAttribute("src");
+        if (originalSrc === imageUrl) {
+          imageElement.src = newUrl;
+        }
+      });
     }
-});
-
-
+  });
 </script>
-
 
 <div class="content-section">
   <form method="post" enctype="multipart/form-data">
@@ -131,33 +153,25 @@
     <fieldset class="form-group">
       <legend class="border-bottom mb-4">New Post</legend>
       {% if form.errors %}
-      <div
-        class="form-error alert alert-warning alert-dismissible fade show text-left"
-        role="alert"
-      >
-        <div class="d-flex align-items-center">
-          <ul class="errors-list mb-0 pl-3">
-            {% for field, errors in form.errors.items %}
-              {% for error in errors%}
-              <li>This field is required: {{ field|title }}</li>
+        <div class="form-error alert alert-warning alert-dismissible fade show text-left" role="alert">
+          <div class="d-flex align-items-center">
+            <ul class="errors-list mb-0 pl-3">
+              {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                  <li>This field is required: {{ field|title }}</li>
+                {% endfor %}
               {% endfor %}
-            {% endfor %}
-          </ul>
-          <button
-            type="button"
-            class="close ml-auto"
-            data-dismiss="alert"
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+            </ul>
+            <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
         </div>
-      </div>
-      {% endif %} 
+      {% endif %}
       {{ form|crispy }}
       <input type="hidden" name="content" id="id_content" />
       {% if post %}
-      <input type="hidden" id="initialContent" value="{{ post.content }}" />
+        <input type="hidden" id="initialContent" value="{{ post.content|replace_img_src_with_base64|safe }}" />
       {% endif %}
     </fieldset>
     <div class="form-group">
@@ -165,20 +179,11 @@
     </div>
   </form>
   <div class="border-top pt-3">
-    <small class="text-muted"
-      >Already have an account?
-      <a href="{% url 'blog-home' %}">Go Back</a></small
-    >
+    <small class="text-muted">
+      Already have an account? <a href="{% url 'blog-home' %}">Go Back</a>
+    </small>
   </div>
 </div>
-
-<style>
-  .content-section {
-    padding-top: 100px;
-  }
-</style>
-
-<!-- Your existing styles -->
 
 <style>
   .content-section {
@@ -218,9 +223,7 @@
     max-height: 0px;
   }
 
-  trix-editor
-    [data-trix-attachment]
-    figcaption[data-trix-placeholder]:empty::before {
+  trix-editor [data-trix-attachment] figcaption[data-trix-placeholder]:empty::before {
     content: attr(data-trix-placeholder);
     color: graytext;
   }
@@ -266,44 +269,20 @@
 </style>
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta
-  name="viewport"
-  content="width=device-width, user-scalable=no, initial-scale=1.0"
-/>
-<meta
-  name="description"
-  content="Compose beautifully formatted text in your web application. Trix is an editor for writing messages, comments, articles, and lists—the simple documents most web apps are made of. It features a sophisticated document model, support for embedded attachments, and outputs terse and consistent HTML."
-/>
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
+<meta name="description" content="Compose beautifully formatted text in your web application. Trix is an editor for writing messages, comments, articles, and lists—the simple documents most web apps are made of. It features a sophisticated document model, support for embedded attachments, and outputs terse and consistent HTML." />
 
 <title>Add a New Post</title>
 
 <link rel="mask-icon" href='/images/pinned-tab-icon.svg"' color="#4fbde1" />
 <link rel="shortcut icon" href="/images/favicon.ico" />
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/trix/0.9.7/trix.css"
-/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/trix/0.9.7/trix.css" />
 <link rel="stylesheet" href="/css/main.css?1708543800090120026" />
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm//trix/dist/trix.min.css"
-  crossorigin="anonymous"
-/>
-<link
-  rel="stylesheet"
-  href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-  integrity="sha384-GLhlTQ8iN17ZL5ZZKgAIfXKD2GRHJ567f9emw+jIbYUqD6S5C1PTZUn4bWm1N2t"
-  crossorigin="anonymous"
-/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm//trix/dist/trix.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-GLhlTQ8iN17ZL5ZZKgAIfXKD2GRHJ567f9emw+jIbYUqD6S5C1PTZUn4bWm1N2t" crossorigin="anonymous" />
 
-<script
-  src="https://cdn.jsdelivr.net/npm//trix/dist/trix.umd.min.js"
-  crossorigin="anonymous"
-></script>
+<script src="https://cdn.jsdelivr.net/npm//trix/dist/trix.umd.min.js" crossorigin="anonymous"></script>
 <script>
   document.addEventListener("trix-initialize", function () {
     Trix.config.textAttributes.underline = {
@@ -315,11 +294,8 @@
       },
     };
 
-    var buttonHTML =
-      '<button type="button" class="trix-button trix-button--icon trix-button--icon-underline" data-trix-attribute="underline" title="underline">U</button>';
-    var groupElement = Trix.config.toolbarElement.querySelector(
-      ".trix-button-group--text-tools"
-    );
+    var buttonHTML = '<button type="button" class="trix-button trix-button--icon trix-button--icon-underline" data-trix-attribute="underline" title="underline">U</button>';
+    var groupElement = Trix.config.toolbarElement.querySelector(".trix-button-group--text-tools");
     groupElement.insertAdjacentHTML("beforeend", buttonHTML);
   });
 </script>

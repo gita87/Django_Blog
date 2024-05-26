@@ -85,10 +85,11 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         # Sanitize HTML content
-        form.instance.content = sanitize_html(form.cleaned_data['content'])
-
-        # Replace blob URLs with actual URLs in the content
-        form.instance.content = Post.replace_blob_urls(form.instance.content)
+        try:
+            form.instance.content = sanitize_html(form.cleaned_data['content'])
+            form.instance.content = remove_figcaption(form.instance.content)
+        except Exception as e:
+            raise Exception(f"Error in sanitize_html: {e}")
 
         # Handle form validation and saving
         return super().form_valid(form)
